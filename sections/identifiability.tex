@@ -1,0 +1,149 @@
+\section{Identifiability and cell-total consistency}
+\label{sec:identifiability}
+
+We port \cref{thm:bg-id} to ST and derive a cell-total consistency
+corollary.
+
+\subsection{The rank condition}
+
+Let the spot-by-cell-type composition matrix $P \in [0,1]^{S \times K}$
+have entries $P_{sk} = p_{s,k}$, with rows summing to $1$. For each
+gene $j$, the spot-level mean expression is $\E[X_{sj}/N_s] = \sum_k
+P_{sk} \mu_{j,k}$. In matrix form, $\bm{m}_j = P \bm{\mu}_j$ where
+$\bm{m}_j \in \R^S$ is the vector of per-spot mean expressions and
+$\bm{\mu}_j \in \R^K$ is the per-cell-type mean expression vector
+for gene $j$.
+
+\begin{theorem}[Identifiability of cell-type-specific expression]
+\label{thm:rank}
+Assume Poisson sampling $X_{sj} \sim
+\mathrm{Poisson}\bigl(N_s \sum_k p_{s,k} \mu_{j,k}\bigr)$ with the
+composition matrix $P$ known (e.g.\ supplied by an external
+reference). The cell-type-specific mean expression vector
+$\bm{\mu}_j \in \R_{\geq 0}^K$ is identifiable from spot-level data
+$\{X_{sj}\}_{s=1\ldots S}$ if and only if $P$ has full column rank
+$K$.
+\end{theorem}
+
+\begin{proof}
+Identifiability of $\bm{\mu}_j$ from the joint distribution of
+$\{X_{sj}\}_s$ is equivalent to identifiability of the spot-level
+mean vector $\bm{m}_j = P\bm{\mu}_j$, because the Poisson family
+is parametrized by its mean (so two parameter vectors yielding the
+same mean vector yield the same joint distribution).
+
+\emph{Necessary direction.} Suppose $P$ has column rank less than
+$K$, so there exists $\bm{v} \neq \bm{0}$ with $P\bm{v} = \bm{0}$.
+For any candidate parameter $\bm{\mu}_j$, the perturbed
+$\bm{\mu}_j' = \bm{\mu}_j + \bm{v}$ (chosen so $\bm{\mu}_j'$ remains
+in $\R_{\geq 0}^K$, possible whenever $\bm{\mu}_j$ has all positive
+entries) satisfies $P\bm{\mu}_j' = P\bm{\mu}_j = \bm{m}_j$. Both
+parameters induce identical spot-level distributions of $\{X_{sj}\}$,
+so $\bm{\mu}_j$ is not identifiable.
+
+\emph{Sufficient direction.} Suppose $P$ has full column rank $K$.
+Then $P^\top P$ is invertible, and the map $\bm{\mu}_j \mapsto
+\bm{m}_j = P\bm{\mu}_j$ is injective on $\R^K$: distinct parameters
+yield distinct mean vectors, and identifiability of $\bm{\mu}_j$
+follows. The closed-form left inverse
+$\bm{\mu}_j = (P^\top P)^{-1} P^\top \bm{m}_j$ recovers the
+parameter from the mean exactly.
+\end{proof}
+
+\begin{remark}[Extensions]
+\label{rmk:rank-extensions}
+Three extensions of \cref{thm:rank} are immediate. (i) If $N_s$
+varies across spots, the proof is unchanged: identifiability is a
+property of the parametric family, not the sample size; consistent
+estimation of $\bm{m}_j$ requires $\min_s N_s$ or the harmonic mean
+to grow, which is the standard Poisson-MLE regularity condition.
+(ii) Bernoulli dropout, in which $X_{sj}$ is observed as zero with
+some cell-type-independent probability $\pi$, is absorbed into the
+mean: $\E[X_{sj}/N_s] = (1-\pi) \sum_k p_{s,k} \mu_{j,k}$, and the
+rank condition on $P$ remains necessary and sufficient (up to a
+known constant). (iii) Cell-type-dependent dropout $\pi_k$
+violates condition C2 of the masking framework and is the regime
+treated by \cite{towell2026mdrelax}; the rank condition is no
+longer sufficient and identifiability degrades quantitatively in
+the gap between the maximum and minimum $\pi_k$.
+\end{remark}
+
+\Cref{thm:rank} is the ST analogue of \cref{thm:bg-id}. It clarifies
+the role of single-cell-resolution platforms: a single cell measured
+at single-cell resolution contributes a row of $P$ that is a unit
+vector $\bm{e}_k$ (composition $100\%$ type $k$), maximally
+informative for column $k$ of $P$. The classical reliability statement
+``singletons restore identifiability'' becomes ``single-cell-resolution
+spots restore identifiability''.
+
+\subsection{When does the rank condition fail?}
+
+In purely sequencing-based ST (no MERFISH/seqFISH+ integration), $P$
+typically has full column rank $K$ \emph{across spots} as long as
+spots cover the full cellular diversity of the tissue. The condition
+fails when:
+\begin{itemize}
+\item Two cell types always co-occur in the same proportion (e.g.,
+  endothelial and pericyte cells in capillary regions), making their
+  contributions inseparable in $P$.
+\item The number of distinct cell types $K$ exceeds the number of
+  distinct $\bm{p}_s$ vectors observed (rare in practice for
+  whole-tissue assays).
+\item Cell types are functionally identical with respect to the
+  measured genes; in this case the framework is correctly reporting
+  that no method can distinguish them.
+\end{itemize}
+
+\subsection{Cell-total consistency}
+
+\begin{theorem}[Cell-total consistency]
+\label{thm:cell-total-st}
+Let $(\hat{\bm{\mu}}_j, \hat{P})$ be an MLE under the spot-level
+Poisson likelihood with mean $N_s \sum_k p_{s,k}\mu_{j,k}$, in which
+both $\bm{\mu}_j$ and $\bm{p}_s$ are unconstrained at the optimum
+(no prior, no penalty, no spatial-smoothness regularization that
+ties the two together). At any interior MLE, for each spot $s$ and
+each gene $j$,
+\begin{equation}
+  \sum_k \hat{P}_{sk} \hat{\mu}_{j,k} = \bar{X}_{sj},
+  \label{eq:cell-total-st}
+\end{equation}
+where $\bar{X}_{sj} = X_{sj}/N_s$ is the empirical mean. The
+identity holds exactly (up to optimization tolerance); boundary
+cases ($\hat P_{sk} = 0$ for some $k$, or $\hat\mu_{j,k} = 0$ for
+some $(j,k)$) reduce to identities on the active support.
+\end{theorem}
+
+\begin{proof}[Sketch]
+Parallels the ZINB cell-total identity in the scRNA-seq precursor
+paper. Under the unconstrained MLE assumption, the score equation
+with respect to $\hat\mu_{j,k}$ at an interior optimum reads
+$\sum_s \hat P_{sk} (\bar X_{sj} - \sum_{k'} \hat P_{sk'}
+\hat\mu_{j,k'}) = 0$ for each $(j,k)$, and the score equation with
+respect to $\hat P_{sk}$ reads $\sum_j \hat\mu_{j,k} (\bar X_{sj} -
+\sum_{k'} \hat P_{sk'} \hat\mu_{j,k'}) = 0$ for each $(s,k)$. Writing
+the residual matrix $R_{sj} = \bar X_{sj} - \sum_{k'} \hat P_{sk'}
+\hat\mu_{j,k'}$ and the full-transcriptome estimator matrix
+$\hat U = [\hat\mu_{j,k}] \in \R^{J \times K}$ (distinct from the
+marker-restricted $M \in \R^{|\mathcal{M}| \times K}$ of
+\cref{sec:methodology}), both score equations imply $\hat P^\top R
+= 0$ and $R \hat U = 0$ on the active support. When both $\hat P$
+and $\hat U$ have full column rank on their respective active
+supports (the conditions of \cref{thm:rank} applied to the joint
+estimator), the only common-kernel solution is $R = 0$ on the
+active support, giving \eqref{eq:cell-total-st} exactly at any
+interior MLE.
+\end{proof}
+
+\textbf{Scope and practical implication.} \Cref{thm:cell-total-st}
+applies to unregularized MLE-based deconvolution: this covers naive
+RCTD and the unregularized limit of joint NMF. It does \emph{not}
+cover Cell2location's Bayesian-hierarchical prior or CARD's
+spatial-smoothness penalty, which couple $\bm{p}_s$ across spots and
+break the unconstrained-optimum assumption. The implication for
+unregularized methods is sharp: disagreement on per-cell-type
+estimates is invisible in marginal-fit checks. For regularized
+methods, the closer the regularization is to identity, the more
+\eqref{eq:cell-total-st} continues to hold approximately. Diagnosing
+per-cell-type bias requires single-cell-resolution data, marker-gene
+calibration, or external biological priors.

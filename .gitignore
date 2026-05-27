@@ -1,0 +1,36 @@
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.latexml.log
+sections/*.aux
+
+# Built paper PDF (re-buildable via `make paper`)
+main.pdf
+
+# 10x Visium raw data (re-downloadable via scripts/download_data.sh)
+data/
+
+# Computed simulation outputs (re-buildable via `make sim` / `make visium` / `make rctd`)
+results.rds
+results_visium.rds
+results_rctd.rds
+results_joint_mu.rds
+
+# R session state
+.Rhistory
+.RData
+.Rproj.user/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store

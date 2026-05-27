@@ -1,0 +1,100 @@
+\section{Introduction}
+\label{sec:intro}
+
+Spatial transcriptomics (ST) measures gene expression at spatially
+resolved positions in tissue \citep{stahl2016visualization,
+chen2015spatially,wang2018three}. The dominant sequencing-based
+platforms (e.g., 10x Genomics Visium, Slide-seq) measure expression
+at \emph{spots} that aggregate $\sim 1$--$50$ cells of unknown type
+composition; the imaging-based platforms (MERFISH, seqFISH+) achieve
+single-cell or subcellular resolution but for a limited gene set.
+Inferring per-cell-type expression from spot-level data is the
+\emph{deconvolution problem}, which has spawned a rapidly growing
+methods literature: Cell2location \citep{kleshchevnikov2022cell2location},
+RCTD \citep{cable2021robust}, Tangram \citep{biancalani2021deep},
+CARD \citep{ma2022spatially}, SPOTlight \citep{elosua2021spotlight},
+Stereoscope \citep{andersson2020stereoscope},
+SpatialDecon \citep{danaher2022advances},
+DestVI \citep{lopez2022destvi},
+and the reference-free STdeconvolve \citep{miller2022reference},
+among the published methods benchmarked by \citet{li2023comprehensive}.
+
+These methods solve the deconvolution problem with a variety of
+parametric and non-parametric approaches. Several discuss
+identifiability informally (RCTD via its likelihood structure;
+Cell2location via its prior; CARD via spatial-smoothness
+restoration), but no prior work characterizes deconvolution
+identifiability through the lens of masked-data coarsening
+conditions, and the consequences for method choice across the
+literature have not been mapped. Practical questions go unanswered:
+how many marker genes are needed, and when can deconvolution fail
+silently?
+
+\subsection{The bridge to masked-data inference}
+
+We observe that ST deconvolution is mathematically isomorphic to the
+masked-data series-system identifiability problem of
+\citet{towell2026masked}. In that framework, $m$ components in
+series produce a system that fails when any one fails; the failed
+component is masked but a \emph{candidate set} containing it is
+observed. Identifiability conditions on the candidate-set matrix
+determine when component-level parameters can be recovered.
+
+The translation to ST is direct: cell types play the role of
+components, spots play the role of candidate sets (observed cell-type
+composition vectors), single-cell-resolution platforms provide
+singleton candidate sets, and marker-gene panels play the role of
+identifying functions. The C1--C2--C3 conditions for ignorable
+coarsening port directly. This framework was previously applied to
+the related scRNA-seq zero-inflation problem
+\citep{towell2026scrnacoarsening,jiang2022zero}; ST is a strict
+generalization in that the candidate set has non-trivial structure
+(multiple cell types per spot) rather than being a single bit (zero
+vs. nonzero count).
+
+\subsection{Contributions}
+
+We contribute:
+
+\begin{itemize}
+\item \textbf{A bridge from ST deconvolution to masked-data
+  inference} (\cref{sec:translation}), formalizing existing methods
+  (RCTD, Cell2location, Tangram, CARD) as special cases of the
+  framework.
+
+\item \textbf{An identifiability theorem} (\cref{sec:identifiability}):
+  cell-type-specific expression is identifiable from spot-level data
+  if and only if the spot-by-cell-type composition matrix has full
+  column rank. We discuss when this condition is met empirically, and
+  when single-cell-resolution platforms or marker-gene panels are
+  needed to restore it.
+
+\item \textbf{A cell-total consistency theorem}
+  (\cref{sec:identifiability}): naive deconvolution methods exactly
+  match observed spot-level expression in aggregate, regardless of
+  per-cell-type bias. This recovers the analogue of the scRNA-seq
+  result of \citet{towell2026scrnacoarsening}.
+
+\item \textbf{A bias bound under marker-gene undercoverage}
+  (\cref{sec:methodology}): a closed-form first-order Taylor bound on
+  the deconvolution bias as a function of the gap between the chosen
+  marker-gene set and the ``true'' identifying set. Recovers as a
+  corollary Tangram's observation that ``a few hundred marker genes
+  suffice'' in mouse brain cortex \citep{biancalani2021deep}.
+
+\item \textbf{Simulation and real-data validation}
+  (\cref{sec:validation}). On simulated data, cell-total consistency
+  holds to machine precision in the noiseless limit and to the
+  Poisson noise floor at finite spot count, and the rank condition is
+  verified across $200$ replicates. On the public 10x Visium adult
+  mouse coronal brain dataset, NMF at $K = 20$ explains $92\%$ of
+  the variance in the log-normalized expression matrix, and a
+  restricted-region scenario reproduces the singleton-augmentation
+  mechanism the framework predicts.
+\end{itemize}
+
+The paper's central message: ST deconvolution methods are not
+arbitrary heuristics; they are special cases of a single
+identifiability framework that predicts when each method is
+appropriate. Practitioners can use the rank condition as a diagnostic
+before applying any deconvolution method.

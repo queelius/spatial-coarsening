@@ -1,0 +1,34 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+ST deconvolution is the masked-data identifiability problem from
+reliability statistics, with cell types playing the role of
+components, spots playing the role of candidate sets, and
+single-cell-resolution platforms playing the role of singleton
+candidate sets. We proved (i) a rank condition on the spot-by-cell-
+type composition matrix that determines when deconvolution is
+identifiable, (ii) a cell-total consistency theorem explaining why
+naive deconvolution methods produce plausible aggregate predictions
+even when per-cell-type estimates disagree, and (iii) a first-order
+bias bound under marker-gene undercoverage that recovers Tangram's
+empirical ``a few hundred markers'' rule as a corollary.
+
+The framework subsumes Cell2location, RCTD, Tangram, and CARD as
+special cases and provides a precise vocabulary for when each
+method's assumptions hold. Practitioners gain a framework-level
+diagnostic for method choice; methodologists gain a unified
+theoretical scaffold for further work.
+
+The principal open extensions are joint composition--expression
+inference, spatial-autocorrelation priors, and incorporation of
+single-cell-resolution measurement noise via C2-relaxed coarsening
+\cite{towell2026mdrelax}. Each is a natural follow-up.
+
+Spatial transcriptomics is one of several distinct domains where
+the masked-data framework yields identifiability conditions and
+bias bounds. Companion papers carry the same apparatus to scRNA-seq
+zero inflation \cite{towell2026scrnacoarsening}, differential
+privacy \cite{towell2026dpcoarsening}, programmatic weak
+supervision \cite{towell2026weaksupcoarsening}, and EHR phenotyping
+\cite{towell2026phenotypecoarsening}. The portability across these
+applications is what motivates the framework-level investment.

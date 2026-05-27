@@ -1,0 +1,135 @@
+\section{Translation: ST deconvolution as a coarsening problem}
+\label{sec:translation}
+
+\subsection{The DGP}
+
+Consider a tissue containing cells of $K$ types. For each cell $i$
+of type $k(i)$ and each gene $j$, the true expression $Y_{ij}$ is
+drawn from a cell-type-specific distribution $f_{j,k(i)}(\cdot;
+\theta_{j,k(i)})$ with mean $\mu_{j,k(i)}$. A spatial-transcriptomics
+experiment partitions the tissue into $S$ spots; spot $s$ contains
+$N_s$ cells with type composition vector $\bm{p}_s = (p_{s,1}, \ldots,
+p_{s,K})$ where $p_{s,k}$ is the fraction of cells of type $k$ in
+spot $s$. The observed spot-level count is approximately
+\begin{equation}
+  X_{sj} \approx N_s \sum_{k=1}^K p_{s,k} \mu_{j,k} + \text{technical noise},
+  \label{eq:trans-spot}
+\end{equation}
+plus dropout in the same form as scRNA-seq
+\citep{towell2026scrnacoarsening}.
+
+The deconvolution problem is: given $\{X_{sj}\}_{s=1\ldots S,
+j=1\ldots p}$ and an external scRNA-seq reference providing estimates
+of $\mu_{j,k}$, recover the per-spot composition $\bm{p}_s$ and (when
+desired) refine the per-cell-type expression estimates.
+
+\subsection{The translation}
+
+\Cref{tab:translation} states the explicit correspondence to
+masked-data inference.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}p{0.43\linewidth} p{0.53\linewidth}@{}}
+\toprule
+\textbf{Masked-data framework} & \textbf{Spatial transcriptomics} \\
+\midrule
+Component $j \in \{1,\ldots,m\}$ & Cell type $k \in \{1,\ldots,K\}$ \\
+Component lifetime $T_{ij}$ & Per-cell expression $Y_{ij}$ for cell of type $k(i)$ \\
+Component distribution $f_j(\cdot;\theta_j)$ & Cell-type expression model with mean $\mu_{j,k}$ \\
+Failure system $T_i = \min$ & Spot total $X_{sj} \approx N_s \sum_k p_{s,k}\mu_{j,k}$ \\
+Failed cause $K_i$ & Cell-type identity (latent for each cell) \\
+\textbf{Candidate set} $c_i$ & \textbf{Spot-level cell-type composition} $\bm{p}_s$ \\
+Singleton candidate $|c_i|=1$ & Single-cell-resolution platform (MERFISH/seqFISH+) \\
+Identifying functions & Marker genes (cell-type-specific high-expression panel) \\
+C1 (cause in candidate set) & Reference atlas covers all cell types present in tissue (no out-of-atlas types) \\
+\textbf{C2} (coarsening at random): conditional on the candidate set, the masking distribution does not depend on which element is the true cause &
+  Concretely: spot assignment (cell-to-spot membership) is determined by tissue geometry and protocol, not by the per-cell-type expression $\mu_{j,k}$ being measured. Violations include cell-type-dependent fixation or permeabilization differences that change which cells get captured \\
+C3 (parameter independence) & $\bm{p}_s$ does not depend on the per-cell-type expression $\mu_{j,k}$ \\
+\bottomrule
+\end{tabular}
+\caption{Translation between the masked-data framework
+\citep{towell2026masked} and ST deconvolution.}
+\label{tab:translation}
+\end{table}
+
+The DGP is a strict generalization of the scRNA-seq case from
+\citet{towell2026scrnacoarsening}. There, the candidate set per
+gene was binary ($\1\{X = 0\}$). Here, the candidate set per
+\emph{spot} is a probability distribution over $K$ cell types,
+parametrized by the composition vector $\bm{p}_s$. The richer
+structure makes the rank condition more demanding (\cref{sec:identifiability})
+but also gives more information per observation.
+
+\subsection{Worked example: RCTD as a C1--C2--C3 specialization}
+\label{sec:rctd-worked}
+
+To make the ``subsumes as special case'' claim concrete, we derive
+RCTD \citep{cable2021robust} as a parametric specialization of the
+framework. RCTD models the spot-level UMI count $X_{sj}$ for gene
+$j$ as Poisson with mean $N_s \sum_k p_{s,k} \mu_{j,k}$ (possibly
+inflated by a multiplicative platform-effect term, which we omit
+here without loss of generality). The likelihood factorizes across
+spots and genes:
+\begin{equation}
+  \mathcal L(\bm \mu, P) \;=\; \prod_{s, j} \mathrm{Poisson}\!\left(X_{sj}
+    \,;\, N_s \textstyle\sum_k p_{s,k}\mu_{j,k}\right).
+  \label{eq:rctd-likelihood}
+\end{equation}
+RCTD fits $\hat{\bm p}_s$ by maximizing
+\eqref{eq:rctd-likelihood} over $\bm p_s \in \Delta^{K-1}$ with
+$\bm\mu$ fixed at scRNA-seq-reference estimates $\hat\mu_{j,k}$, no
+penalty or prior on $\bm p_s$ beyond the simplex constraint.
+
+The mapping into the framework is line-by-line. C1 (cause in
+candidate set) is the assumption that every cell type present in a
+spot appears in the reference $\hat\mu_{j,k}$: an out-of-atlas cell
+type would be silently absorbed into the in-atlas types, biasing
+$\hat{\bm p}_s$. A weaker but still consequential form of C1
+violation is atlas-tissue distributional mismatch, in which a
+cell type appears in both but with $\hat\mu_{j,k}$ from the
+reference systematically displaced from the tissue's actual
+$\mu_{j,k}$ for that type (a known issue in cross-study atlas
+reuse; see \citet{tasic2018shared}). C2 (CAR) is the assumption that spot assignment
+does not depend on per-cell-type expression: which cells fall in
+which Visium spot is determined by physical tissue placement on the
+slide, not by the gene-expression values being measured. C3
+(parameter independence) is the assumption that $\bm p_s$ does not
+encode information about $\bm \mu$: the cell-type composition of a
+spot is a property of tissue architecture, separable from the
+expression profile of each cell type. Under all three, the Poisson
+likelihood in \eqref{eq:rctd-likelihood} is the ignorable-coarsening
+likelihood of the framework with the parametric choice
+$f_{j,k}(x; \mu_{j,k}) = \mathrm{Poisson}(x; N_s p_{s,k}\mu_{j,k})$.
+The rank condition (\cref{thm:rank}) and cell-total consistency
+(\cref{thm:cell-total-st}) then apply: RCTD inherits
+identifiability when the spot-by-cell-type composition matrix
+$P$ has full column rank $K$, and its fitted spot means match
+observed spot means at any interior MLE.
+
+The bias bound (\cref{thm:bias-marker}) bites for RCTD when the
+reference $\hat\mu_{j,k}$ is restricted to a marker-gene panel
+$\mathcal M$: $\hat{\bm p}_s$ inherits the first-order Taylor bias
+$J_{p,M}\cdot\mathrm{vec}(\Delta M)$ with the sensitivity matrix
+evaluated at the marker-restricted Hessian of
+\eqref{eq:rctd-likelihood}.
+
+Cell2location and Tangram fit the framework with different
+parametric and procedural choices: Cell2location replaces the flat
+simplex constraint with a hierarchical prior on $\bm p_s$ (a
+specific form of identifiability assumption), and Tangram aligns
+scRNA-seq cells to spatial positions, which the framework reads as
+constructing singleton candidate sets at single-cell resolution.
+Each method's identifiability and bias behavior follows from
+substituting its specific parametric and procedural choices into the
+same C1--C2--C3 ledger. We do not derive each in detail here; the
+RCTD derivation above is the template.
+
+CARD adds a spatial-smoothness prior on $\bm p_s$ that couples
+neighboring spots; this falls outside the unconstrained-optimum
+hypothesis of \cref{thm:cell-total-st} and is best analyzed as a
+regularized estimator within the framework. The discussion
+(\cref{sec:discussion}) enumerates the further parametric variants
+(SPOTlight, Stereoscope, SpatialDecon, DestVI, STdeconvolve) that
+fit the same template.

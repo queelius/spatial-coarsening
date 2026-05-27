@@ -1,0 +1,87 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Relation to existing methods}
+
+The translation table (\cref{tab:translation}) and the RCTD worked
+example (\cref{sec:rctd-worked}) place each major ST deconvolution
+method as a parametric or procedural specialization of the same
+coarsening framework: Cell2location replaces the simplex constraint
+with a hierarchical prior \citep{kleshchevnikov2022cell2location};
+RCTD takes the unregularized Poisson form \citep{cable2021robust};
+Tangram constructs singleton candidate sets via cell-level
+alignment \citep{biancalani2021deep}; CARD adds a
+spatial-smoothness regularizer \citep{ma2022spatially}; SPOTlight
+\citep{elosua2021spotlight}, Stereoscope
+\citep{andersson2020stereoscope}, SpatialDecon
+\citep{danaher2022advances}, DestVI \citep{lopez2022destvi}, and
+STdeconvolve \citep{miller2022reference} are further parametric
+variants. These methods perform differently on different tissues
+\citep{li2023comprehensive} because each method's prior or
+regularization implicitly assumes a particular candidate-set
+structure; the framework-level diagnostic (rank condition +
+marker-gene bias bound) lets practitioners predict which method is
+appropriate before running the full pipeline.
+
+\subsection{What the framework does \emph{not} address}
+
+\begin{itemize}
+\item \textbf{Joint inference of composition and expression.} The
+  framework analyzes deconvolution conditional on a cell-type
+  reference. Joint inference is a richer problem
+  \citep{zhang2023spatially}.
+
+\item \textbf{Spatial autocorrelation.} The framework treats spots as
+  exchangeable. CARD-style spatial-smoothness priors are an
+  orthogonal addition we do not analyze.
+
+\item \textbf{Deep-learning identifiability.} Tangram-style
+  end-to-end learning may achieve identifiability for reasons not
+  captured by the rank condition (e.g., implicit regularization in
+  neural network optimization). Whether such methods deliver bias
+  bounds comparable to \cref{thm:bias-marker} is open.
+
+\item \textbf{Single-cell-resolution noise.} We treat MERFISH/seqFISH+
+  measurements as ground-truth singletons. In practice they have
+  their own noise; the framework would benefit from incorporating it
+  via the C2 relaxation results of \cite{towell2026mdrelax}.
+
+\item \textbf{External-reference dependence.} Our real-Visium
+  validation uses the dataset's own CellRanger clustering as the
+  cell-type reference rather than an independent scRNA-seq atlas.
+  This is appropriate for testing the framework's
+  conditions-on-inputs predictions (which hold regardless of
+  reference choice), but a fully external reference would strengthen
+  empirical claims about specific cell-type-mean recovery. The
+  journal-format companion to this work pursues this with the Allen
+  Brain Atlas.
+\end{itemize}
+
+\subsection{Broader implications}
+
+The framework's main contribution is shifting the ST deconvolution
+literature from method-specific to assumption-specific reasoning. A
+practitioner asking ``which deconvolution method should I use?'' can
+now answer by checking which assumptions (rank condition, marker-gene
+adequacy, single-cell-resolution availability) hold for their data
+and tissue. This is the same shift previously achieved for scRNA-seq
+zero inflation in \cite{towell2026scrnacoarsening}.
+
+\subsection{A framework across domains}
+
+ST deconvolution is one application of a portable apparatus. The
+same masked-data conditions ground a series of companion papers in
+distinct domains: scRNA-seq zero inflation as a binary
+candidate-set instance \citep{towell2026scrnacoarsening};
+local-differential-privacy mechanisms as randomized candidate-set
+generators \citep{towell2026dpcoarsening}; programmatic weak
+supervision with heterogeneous labeling functions as
+candidate-set unions over label space
+\citep{towell2026weaksupcoarsening}; and EHR phenotyping under
+code-set heterogeneity as candidate sets of clinical phenotypes
+\citep{towell2026phenotypecoarsening}. Each application
+contributes distinct identifiability conditions and bias bounds,
+but the underlying C1, C2, C3 conditions and rank-style
+identifiability criteria are shared. The portability is
+itself the principal contribution of the series; this paper
+demonstrates one instance.

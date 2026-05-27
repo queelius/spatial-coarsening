@@ -1,0 +1,111 @@
+%% Coarsening at random for spatial transcriptomics:
+%% identifiability conditions for cell-type deconvolution.
+%% Conference-format draft (target: 12 pages incl. references).
+
+\documentclass[11pt,letterpaper]{article}
+
+%% ============================================================================
+%% Packages
+%% ============================================================================
+
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage[shortlabels]{enumitem}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{natbib}
+\usepackage{cleveref}
+
+%% Theorem environments
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{condition}{Condition}
+\crefname{condition}{Condition}{Conditions}
+\Crefname{condition}{Condition}{Conditions}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+%% Macros
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\X}{X}
+\newcommand{\Y}{Y}
+
+%% Title
+\title{Coarsening at random for spatial transcriptomics:\\
+       identifiability conditions for cell-type deconvolution}
+
+\author{
+  Alexander Towell \\
+  Department of Computer Science \\
+  Southern Illinois University Edwardsville \\
+  \texttt{lex@metafunctor.com} \\
+  ORCID: \href{https://orcid.org/0000-0001-6443-9897}{0000-0001-6443-9897}
+}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Spatial transcriptomics (ST) measures gene expression at spatial
+positions in tissue, but each measured ``spot'' typically aggregates
+multiple cells of unknown type composition. Recovering per-cell-type
+expression from spot-level measurements is the \emph{deconvolution}
+problem, attacked by methods such as Cell2location, RCTD, Tangram,
+and CARD. We show that ST deconvolution is an instance of the
+masked-data identifiability problem from reliability statistics, with
+each spot acting as a candidate set over cell types and single-cell-
+resolution platforms (MERFISH, seqFISH+) acting as singleton
+candidate sets that restore identifiability.
+
+We establish: (i) a rank-condition for identifiability of cell-type-
+specific expression from spot-level data, in terms of the
+spot-by-cell-type composition matrix; (ii) a closed-form bias bound
+characterizing the cost of marker-gene-set undercoverage; and (iii) a
+cell-total consistency theorem analogous to the scRNA-seq result of
+Towell (2026), explaining why naive deconvolution methods produce
+plausible aggregate predictions even when per-cell-type estimates are
+biased.
+
+A simulation study confirms the rank condition, and application to a
+public Visium dataset finds the per-entry cell-total residual
+consistent with the theorem to the Poisson noise floor at the
+sequencing depth of the dataset. The framework subsumes RCTD,
+Cell2location, and Tangram as special cases, with an RCTD worked
+derivation provided in the text, and gives a precise vocabulary for
+when each method is appropriate. Tangram's empirical observation
+that ``a few hundred marker genes suffice'' is recovered as a
+corollary of the rank condition.
+\end{abstract}
+
+\input{sections/introduction}
+\input{sections/background}
+\input{sections/translation}
+\input{sections/identifiability}
+\input{sections/methodology}
+\input{sections/validation}
+\input{sections/discussion}
+\input{sections/conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}

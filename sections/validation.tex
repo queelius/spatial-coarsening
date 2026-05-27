@@ -1,0 +1,325 @@
+\section{Validation}
+\label{sec:validation}
+
+We validate the three theorems on simulated spatial-transcriptomics
+data with known ground-truth composition. A Visium-scale synthetic
+case demonstrates rank restoration via singleton augmentation. All
+results are reproducible from \texttt{scripts/run.R} (seed
+\texttt{20260517}).
+
+\subsection{Data-generating process}
+
+For $K$ cell types and $J$ genes, per-cell-type mean expression
+$\mu_{j,k}$ is drawn log-normal, per-spot composition
+$\bm{p}_s \sim \mathrm{Dirichlet}(\alpha \bm{1}_K)$, and observed
+counts $X_{sj} \sim \mathrm{Poisson}(N_s \sum_k p_{s,k} \mu_{j,k})$.
+The empirical mean $\bar{X}_{sj} = X_{sj}/N_s$ is the working
+quantity. Two estimators are used: an \emph{oracle} estimator that
+solves $\bar{X} \approx P \mu^\top$ for $P$ given the true $\mu$, and
+a joint nonnegative matrix factorization (Frobenius, Lee--Seung
+updates) that estimates both.
+
+\subsection{Rank condition (\cref{thm:rank})}
+
+We sweep $\alpha \in \{0.1, 0.3, 0.5, 1.0, 2.0\}$, $K \in \{5, 10,
+20\}$, and $S/K \in \{0.5, 0.8, 1, 2, 5, 10\}$ over $200$ replicates.
+Empirically, $P$ is rank-deficient with probability $1$ whenever
+$S < K$ and full column rank $K$ with probability $1$ whenever
+$S \geq K$, across every value of $\alpha$ and $K$ tested
+(\Cref{fig:rank-diag}A). The framework correctly identifies
+$S \geq K$ as the necessary condition.
+
+Conditioning, however, does depend on $\alpha$. For $K = 10$ and
+$S = K$, the median minimum singular value $\sigma_{\min}(P)$ rises
+from $0.008$ at $\alpha = 0.1$ to a peak of $0.022$ at $\alpha = 0.5$
+and falls to $0.014$ at $\alpha = 2.0$ (\Cref{fig:rank-diag}B). The
+tradeoff is biological: $\alpha$ very small concentrates composition
+on a few cell types per spot (worse separability between rare cell
+types), while $\alpha$ large flattens compositions toward uniform
+(worse separability between any cell types).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{rank_diagnostic.pdf}
+\caption{Rank-condition diagnostic for $K = 10$, $200$ replicates per
+cell. (A) Full-rank probability is a step function in $S/K$: $0$ for
+$S < K$, $1$ for $S \geq K$, independent of $\alpha$. (B) Conditioning
+$\sigma_{\min}(P)$ improves with $S/K$ and is non-monotone in
+$\alpha$, with best conditioning near $\alpha \approx 0.5$.}
+\label{fig:rank-diag}
+\end{figure}
+
+\subsection{Cell-total consistency (\cref{thm:cell-total-st})}
+
+The theorem predicts that the fitted spot-mean $\sum_k \hat{P}_{sk}
+\hat{\mu}_{j,k}$ equals the observed $\bar{X}_{sj}$ in the absence
+of sampling noise. We verify this in two regimes.
+
+\paragraph{Noiseless limit.} For $S = 500$, $J = 50$, $K = 5$, we
+feed the true mean $P \mu^\top$ directly to the oracle (closed-form
+OLS for $P$ given known $\mu$). The fitted spot-mean reproduces the
+truth at machine precision: maximum absolute residual $7.1 \times
+10^{-15}$, median $2.2 \times 10^{-16}$. \Cref{thm:cell-total-st}
+is validated at the exact-zero level its hypothesis predicts.
+Multiplicative-update NMF on the same input does not reach a
+stationary point on a practical iteration budget: the Frobenius
+residual decays sublinearly from $4.53$ at $100$ iterations to
+$0.015$ at $50{,}000$ iterations, never reaching machine precision.
+This is a property of the algorithm (linear convergence of
+multiplicative updates), not of the theorem.
+
+\paragraph{Noisy regime.} At finite $N_s$, the residual is
+Monte-Carlo noise. With the oracle estimator on $25$ replicates per
+$N_s$, the median absolute residual decreases monotonically:
+$0.075$ at $N_s = 100$, $0.024$ at $N_s = 1{,}000$, and $0.0075$ at
+$N_s = 10{,}000$, consistent with the $1/\sqrt{N_s}$ Poisson scaling.
+NMF gives essentially the same median trajectory.
+
+\paragraph{Practical implication.} The exact cell-total consistency
+predicted by \cref{thm:cell-total-st} is achievable to machine
+precision when $\mu$ is known (e.g., from an external single-cell
+atlas); the noisy-data residual is dominated by Poisson noise, not
+by structural model error.
+
+\subsection{Marker-gene bias (\cref{thm:bias-marker})}
+
+We measure the median per-spot total-variation distance between
+estimated and true composition as a function of marker-panel size
+$|\mathcal{M}|$ ($J = 200$, $K = 5$, $S = 500$, $N_s = 100$,
+$25$ replicates per cell). Markers are selected greedily by
+across-type expression range. Median TV bias decreases sharply:
+$0.21$ at $|\mathcal{M}| = 5$, $0.044$ at $|\mathcal{M}| = 10$,
+$0.015$ at $|\mathcal{M}| = 25$, and saturates near $0.010$ for
+$|\mathcal{M}| \geq 100$ (\Cref{fig:marker-bias}).
+
+The empirical log--log slope is $-0.78$ at $K = 5$, and $-0.60$ at
+a Visium-scale $K = 30$ replicate (with $S = 2{,}700$, $J = 500$,
+$|\mathcal{M}|$ from $30$ to $500$). At the Visium scale, $|\mathcal
+{M}| = 200$ gives median per-spot TV bias of $1.9\%$, directly
+matching Tangram's empirical ``few hundred markers'' regime
+\citep{biancalani2021deep}. The $-0.5$ baseline that
+this beats comes from a back-of-envelope iid argument: if markers
+are chosen uniformly at random from a pool of $J^* \gg |\mathcal M|$
+identifying genes, then $\Delta M$ has per-entry variance on the
+order of $\sigma^2$ and its $\ell_2$ norm enters the
+first-order Taylor bound (eq.~\eqref{eq:bias-marker}) at scale
+$\sigma / \sqrt{|\mathcal M|}$, giving RMS composition bias
+$\propto |\mathcal M|^{-1/2}$. Informed selection (most-differential
+genes) does better because the early markers carry disproportionate
+cell-type signal: the per-marker contribution to $\sigma_{\min}(M)$
+is larger than the iid baseline allows, accelerating the empirical
+decay until a substructure floor of the model itself is reached. Tangram's empirical
+observation that ``a few hundred marker genes suffice''
+\citep{biancalani2021deep} is recovered: at $|\mathcal{M}| = 100$
+the median composition error is already below $1\%$.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.65\linewidth]{marker_bias.pdf}
+\caption{Marker-gene bias as a function of panel size $|\mathcal{M}|$.
+Shaded band: median to 90th-percentile range. Theoretical
+$1/\sqrt{|\mathcal{M}|}$ reference (dashed) corresponds to random
+marker selection; the empirical curve (solid) is steeper because of
+informed marker selection.}
+\label{fig:marker-bias}
+\end{figure}
+
+\subsection{Visium-scale synthetic case}
+
+We construct $S = 2{,}700$ spots, $K = 30$ cell types, $J = 200$
+genes, $N_s = 500$, approximating the scale of the 10x Visium mouse
+coronal brain dataset.
+
+\paragraph{Random composition.} With $\bm{p}_s \sim
+\mathrm{Dirichlet}(0.5)$ per spot, $P$ has full column rank $30$ with
+$\sigma_{\min} = 2.12$. Cell-total residual on the top-$200$ most
+expressed genes has median relative error $4.2 \times 10^{-2}$,
+consistent with the $1/\sqrt{N_s}$ Poisson floor.
+
+\paragraph{Structured composition.} Real spatial tissue is not random
+in composition. We construct $G = 6$ tissue-region templates, each a
+sparse Dirichlet mixture over a subset of the $30$ cell types, and
+assign each spot to one of the templates. The resulting composition
+matrix has $\mathrm{rank}(P) = 6 < K = 30$: cell types within a
+template always co-occur in fixed proportion, so they cannot be
+distinguished from spot data alone. Augmenting $P$ with $30$
+singleton rows (one cell per cell type, as a single-cell-resolution
+reference would provide) restores rank to $30$ with $\sigma_{\min} =
+1.0$. This is the precise mechanism by which platforms such as
+MERFISH and seqFISH+ resolve identifiability in structured tissue:
+they provide singleton candidate sets that the framework predicts
+will be necessary.
+
+\paragraph{Joint $(\mu, P)$ recovery: direct test of
+\cref{thm:rank}.} The rank result above describes the input
+condition; the theorem's content is that $\mu$ is non-identifiable
+when the condition fails. We test this directly by running joint
+NMF at $K = 30$ on the three scenarios and measuring how well the
+inferred $\hat\mu$ recovers the ground truth $\mu_{\text{true}}$.
+The variance-fraction of $\mu_{\text{true}}$ lying in the column
+span of $\hat\mu$ is $0.573$ for the structured rank-$6$ case,
+$0.936$ after singleton augmentation, and $0.992$ for the
+random-Dirichlet control. The corresponding median per-cell-type
+cosine similarities (greedy column alignment) are $0.59$, $0.95$,
+and $0.94$. About half of the $30$ true cell-type expression
+vectors are unrecoverable from spot data alone in the rank-$6$
+scenario; singleton augmentation makes them recoverable. The
+contrast between the singletons-augmented case ($0.94$ cosine, rank
+$30$ by addition) and the random-Dirichlet case ($0.94$ cosine,
+rank $30$ by chance) confirms that rank, not structure, is the
+operative input condition.
+
+\subsection{RCTD-style head-to-head on the synthetic Visium data}
+
+To convert the framework's predictions about conditions into a
+predictions-about-methods statement, we compare two
+specialization-of-the-framework estimators on the Visium-scale
+synthetic data above ($K = 30$, $S = 2{,}700$, $J = 200$, $N_s =
+500$, $\mu$ known): the oracle OLS-with-simplex-projection
+estimator used throughout, and a faithful re-implementation of
+RCTD's core algorithm (per-spot Poisson MLE for $\bm p_s$ given
+$\mu$, simplex-constrained, EM-style multiplicative updates). The
+published \texttt{spacexr} package adds platform-effect terms and
+confidence intervals that do not test the identifiability claims.
+
+Across both rank scenarios (random Dirichlet, full-rank $P$;
+structured $G = 6$ patches, $\mathrm{rank}(P) = 6$), both methods
+recover composition with comparable per-spot total-variation
+errors: median TV $0.026$ (oracle) vs $0.046$ (RCTD-style) on the
+random case; $0.011$ vs $0.044$ on the structured case. The
+across-spot rank of $P$ does not affect per-spot recovery here:
+once $\mu$ is supplied, per-spot $\bm p_s$ recovery is governed by
+$\sigma_{\min}(\mu) > 0$ (\cref{thm:bias-marker}'s territory), not
+by $\sigma_{\min}(P)$ (\cref{thm:rank}'s territory). The latter
+governs joint $\mu$ inference, which neither estimator attempts in
+this setting.
+
+The Spearman rank correlation of per-spot TV between methods is
+low ($0.12$ on the random case, $0.25$ on the structured) despite
+similar median magnitudes: the methods make different errors on
+different spots, consistent with their different noise models, but
+both succeed or fail under the same identifiability conditions.
+The framework converts \emph{which conditions hold} into a
+prediction that any unconstrained-likelihood method gives similar
+expected recovery; method choice is downstream of conditions, not
+upstream.
+
+\subsection{Real Visium data: 10x adult mouse coronal brain}
+
+We apply the framework diagnostics to the public 10x Genomics V1
+adult mouse coronal brain Visium dataset
+\citep{stahl2016visualization}: $2{,}702$ spots, $32{,}285$ genes,
+median $28{,}944$ UMI per spot. We restrict to the top $2{,}000$
+high-variance genes to focus on the cell-type-bearing signal and
+work in the empirical mean $\bar{X}_{sj} = X_{sj}/N_s$ throughout.
+HVG selection is itself a marker-gene choice in the framework's
+sense: it picks genes with high cross-cell-type expression range,
+which is what makes $\sigma_{\min}(M)$ in \cref{thm:bias-marker}
+large and the bias bound small. The framework predicts that HVG
+selection improves identifiability for the same reason Tangram's
+``few hundred marker genes'' rule works empirically.
+The cell-type reference is the CellRanger analysis output shipped
+with the dataset (graph-based clusters at $K = 7$, K-means at $K =
+10$). We use the in-dataset reference deliberately: the framework
+makes predictions about \emph{conditions on inputs} that hold
+regardless of which reference is chosen, and the in-dataset
+reference eliminates ID-mapping and batch-effect confounds that an
+external scRNA-seq atlas, such as the Allen Brain Atlas mouse
+cortex compendium \citep{tasic2018shared}, would introduce. A reference-free
+analysis (NMF on the spot matrix alone) is reported alongside the
+cluster-based pseudobulk as a robustness check.
+
+\paragraph{Spectrum and global conditioning.} The singular-value
+spectrum of centered log-normalized expression decays sharply over
+the first few dozen components and tails off (\Cref{fig:visium}A):
+$\sigma_{30}/\sigma_1 = 0.095$, locating the cell-type-like signal
+in the leading components and consistent with the CellRanger
+clustering at $K = 7$ (graph-based) and $K = 10$ (K-means). At
+$K = 20$, the NMF-inferred composition $\hat P$ is itself
+well-conditioned across the whole tissue: full effective rank $20$
+at the $5\%$ singular-value threshold, condition number
+$\kappa(\hat P) = 9.5$. The rank condition is satisfied globally,
+even though local subregions can still violate it (as the
+restricted-region scenario below shows). This is the practical
+content of \cref{thm:rank}: identifiability of a particular
+cell-type-specific quantity depends on which spots are in the
+analysis, not on the full atlas.
+
+\paragraph{Cell-total consistency.} We flag a category issue
+upfront: hard-cluster pseudobulk imposes a one-hot $P$, so it is a
+constrained estimator and not a test of \cref{thm:cell-total-st}
+(which is about unconstrained-MLE / stationary points of the joint
+loss). We report hard-cluster numbers only to calibrate how much of
+the spot-level signal is between-cluster versus within-cluster.
+Joint NMF (Frobenius, multiplicative updates, $150$ iterations) is
+the actual theorem test. The Frobenius-relative residuals are
+$0.41$ for hard $K = 7$, $0.33$ for hard $K = 10$, $0.108$ for NMF
+$K = 10$, and $0.0762 \pm 0.0023$ across five random seeds for NMF
+$K = 20$ (\Cref{fig:visium}B). Seed-to-seed variability is small
+relative to the noise-floor and substructure contributions
+decomposed below.
+
+\paragraph{Decomposing the NMF residual.} The expected Poisson
+noise floor on $\bar X_{sj} = X_{sj}/N_s$ has per-entry variance
+$\lambda_{sj}/N_s$, which aggregated over the matrix gives
+Frobenius-relative floor $\bigl(\sum_{s,j} \bar X_{sj}/N_s\bigr)^{1/2}
+/ \|\bar X\|_F = 0.053$ on the present data. The observed NMF $K =
+20$ residual is $0.077$, so the variance excess above the noise
+floor is $0.077^2 - 0.053^2 = 0.0031$, i.e.\ a Frobenius-relative
+contribution of $\sqrt{0.0031} \approx 0.056$. We do not attempt to
+separate the residual contributions from cell-type substructure
+beyond $K = 20$ (panel A decays gradually past component $20$) and
+the algorithmic shortfall of multiplicative-update NMF (which the
+noiseless control above shows is sublinear). On the noiseless
+control, at the same iteration budget ($150$) the algorithmic
+residual would still be near its early-iteration value; running to
+$50{,}000$ iterations on a smaller problem only reaches a
+Frobenius-relative residual of $\sim 10^{-4}$, supporting an
+interpretation in which the bulk of the real-data $0.056$ excess is
+unmodeled cell-type substructure beyond the first $20$ NMF
+components. The theorem's exact-zero prediction is a property of
+the stationary-point hypothesis, not directly testable on a
+fixed-iteration algorithmic run on noisy data; the noise-floor and
+spectrum decompositions above are what the framework lets us
+compute on real data instead.
+
+\paragraph{Rank restoration on a tissue subregion.} We construct
+the restricted-tissue scenario directly from the data. Selecting the
+$2{,}027$ spots assigned to K-means clusters $1$ through $5$ gives a
+composition matrix of rank $5$ over a $K = 10$ ambient space, so
+five cell types are unobservable from spots alone. Augmenting with
+$10$ singleton rows (one cell per type, the structural contribution
+of a single-cell-resolution platform) restores rank to $10$ with
+$\sigma_{\min} = 1.0$. The mechanism predicted by \cref{thm:rank} is
+realized in the dataset: a single-cell-resolution reference is what
+makes the $5$ missing cell types identifiable.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{visium_spectrum.pdf}
+\caption{Real-data Visium diagnostics on the 10x adult mouse coronal
+brain. (A) Singular-value spectrum of the top-$2{,}000$ HVG
+log-normalized expression matrix; vertical lines mark the
+graph-based ($K = 7$) and K-means ($K = 10$) cluster counts. (B)
+Frobenius-relative cell-total residual across four estimators:
+hard-cluster pseudobulk at $K = 7, 10$ and joint NMF at $K = 10,
+20$. NMF at $K = 20$ leaves $7.7\%$ residual, dominated by Poisson
+noise and unmodeled substructure beyond the first $20$ components.}
+\label{fig:visium}
+\end{figure}
+
+\paragraph{Scope of the empirical validation.} The validation here
+targets the framework's predictions (rank condition, cell-total
+consistency, marker-gene bias scaling) on inputs that any
+deconvolution method shares. The framework is method-agnostic: it
+specifies conditions under which \emph{any} method can recover
+$\bm{\mu}_j$ and bounds the bias that any method incurs when those
+conditions partially fail. Head-to-head benchmarking of RCTD,
+Cell2location, and Tangram against one another on the synthetic
+and real Visium inputs is a complementary methodological study,
+deferred to the journal-format companion to this work; performing
+that benchmark
+adds engineering effort (Python and PyTorch pipelines) but does not
+test the framework's claims, which are about
+\emph{conditions-on-inputs} rather than method ranking on a fixed
+input.

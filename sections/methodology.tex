@@ -1,0 +1,101 @@
+\section{Bias bound under marker-gene undercoverage}
+\label{sec:methodology}
+
+The rank condition (\cref{thm:rank}) requires $P$ to have full column
+rank, but $P$ itself is unobserved. In practice, $P$ is estimated
+from a marker-gene panel: a chosen set of genes $\mathcal{M} \subset
+\{1,\ldots,p\}$ whose expression is differential across cell types.
+The chosen marker set indirectly determines the recoverable rank of
+$P$. We characterize the bias when $\mathcal{M}$ undercovers the
+true cell-type signature.
+
+\subsection{Setup}
+
+Notation: $\mu_{j,k}$ is the scalar per-gene per-cell-type mean,
+$\bm{\mu}_j \in \R^K$ is the column-vector across cell types for
+fixed gene $j$ (as in \cref{sec:identifiability}), and $M \in
+\R^{|\mathcal{M}| \times K}$ is the marker-restricted signature
+matrix whose rows are $\bm{\mu}_m^\top$ for $m \in \mathcal{M}$.
+Equivalently, $M$ is obtained by stacking
+$\bm{\mu}_{\mathcal{M}, k} \in \R^{|\mathcal{M}|}$, the expression
+signature of cell type $k$ on the marker set, column-wise:
+$M = [\bm{\mu}_{\mathcal{M},1} \mid \cdots \mid
+\bm{\mu}_{\mathcal{M},K}]$. The composition $\hat{\bm{p}}_s$ is recovered by
+solving (per spot)
+\begin{equation}
+  \hat{\bm{p}}_s = \arg\min_{\bm{p} \geq 0,\, \1^\top \bm{p} = 1}
+  \|\bm{X}_{s,\mathcal{M}}/N_s - M \bm{p}\|^2,
+  \label{eq:meth-fit}
+\end{equation}
+or its likelihood-weighted equivalent.
+
+\subsection{Bias bound}
+
+Suppose the ``true'' (oracle) marker set is $\mathcal{M}^*$ with
+signature matrix $M^*$, and the chosen set $\mathcal{M}$ corresponds
+to $M = M^* + \Delta M$ where $\Delta M$ captures both
+undercoverage and noise in marker-gene selection.
+
+\begin{theorem}[First-order bias under marker-gene perturbation]
+\label{thm:bias-marker}
+Assume (i) $M^*$ has full column rank $K$, (ii) the loss in
+\eqref{eq:meth-fit} is twice continuously differentiable in $(\bm{p}, M)$
+in a neighborhood of $(\bm{p}_s^*, M^*)$, and (iii) the Hessian
+$\bm{H}_{pp} = \partial^2_{\bm{p}\bm{p}} \ell(\bm{p}, M^*) \big|_{\bm{p}^*}$
+is nonsingular at the true composition $\bm{p}_s^*$. Let
+$\hat{\bm{p}}_s(\Delta M)$ be the estimate using $M = M^* + \Delta M$.
+Then
+\begin{equation}
+  \hat{\bm{p}}_s(\Delta M) - \bm{p}_s^*
+  = J_{p,M}(\bm{p}_s^*, M^*) \cdot \mathrm{vec}(\Delta M)
+    + O_p(n^{-1/2}) + O(\|\Delta M\|^2),
+  \label{eq:bias-marker}
+\end{equation}
+where $J_{p,M} = -\bm{H}_{pp}^{-1} \bm{J}_{pM}$ is the
+sensitivity matrix, $\bm{J}_{pM} = \partial^2_{\bm{p} M}
+\ell(\bm{p}, M)\big|_{(\bm{p}^*, M^*)}$ is the cross-Jacobian of the
+loss with respect to composition and marker signature, and $n$ is the
+per-spot count.
+\end{theorem}
+
+\begin{proof}[Sketch]
+First-order Taylor expansion of the implicit-function map $M \mapsto
+\hat{\bm{p}}_s(M)$ defined by the score equation
+$\partial_{\bm{p}} \ell(\bm{p}, M) = 0$ at $(\bm{p}^*, M^*)$.
+The implicit-function theorem applies under assumptions (ii) and
+(iii), yielding $J_{p,M} = -\bm{H}_{pp}^{-1} \bm{J}_{pM}$. The
+$O_p(n^{-1/2})$ term comes from the finite-sample MLE central limit
+theorem. The construction parallels the spike-in marker bias bound
+in \cite[\S 7]{towell2026scrnacoarsening}; the full derivation under
+heteroskedastic Poisson noise is deferred to the journal-format
+companion to this work.
+\end{proof}
+
+\subsection{Recovery of Tangram's empirical observation}
+
+\citet{biancalani2021deep} reported empirically that ``a few hundred
+marker genes, stratified across cell types, sufficed to map the
+mouse brain cortex transcriptome-wide'' but that ``with 22 genes
+(smFISH), we could not successfully predict transcriptome-wide
+spatial gene expression''. \Cref{thm:bias-marker} is consistent with
+this: the marker-gene-bias term in
+\eqref{eq:bias-marker} scales with $\|\Delta M\|$, and through
+$\bm{H}_{pp}^{-1}$ the bias inflates by the inverse of
+$\sigma_{\min}(M)^2$. The latter scaling follows from the
+least-squares form of \eqref{eq:meth-fit}: at the unconstrained
+optimum, $\bm{H}_{pp} = M^\top M$, so $\|\bm{H}_{pp}^{-1}\| =
+\sigma_{\min}(M)^{-2}$ in spectral norm. Conditioning of $M$
+therefore controls how sharply the bias grows with $\|\Delta M\|$,
+and degrades when $|\mathcal{M}|$ falls below a critical threshold
+determined by $K$.
+
+The framework reframes Tangram's heuristic ``a few hundred markers''
+as a diagnostic: choose $|\mathcal{M}|$ such that
+$\sigma_{\min}(M)$ is bounded away from zero relative to noise
+scale, where the tolerance is read off the prediction-error budget
+implied by \cref{thm:bias-marker}. The threshold value
+$|\mathcal{M}| \approx 200$ for $K \approx 30$ is the empirical
+operating point at which Tangram's estimates stabilize
+\citep{biancalani2021deep}; we do not derive this absolute number
+analytically, but its scaling with $K$ matches the rank-condition
+intuition.
