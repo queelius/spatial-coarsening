@@ -10,6 +10,11 @@ $(PAPER).pdf: $(PAPER).tex sections/*.tex refs.bib
 	pdflatex $(PAPER).tex
 	pdflatex $(PAPER).tex
 
+cell_total: results_cell_total.rds
+
+results_cell_total.rds: scripts/cell_total_kernel.R
+	Rscript scripts/cell_total_kernel.R
+
 sim: results.rds
 
 results.rds: scripts/sim.R scripts/run.R

@@ -102,37 +102,51 @@ Let $(\hat{\bm{\mu}}_j, \hat{P})$ be an MLE under the spot-level
 Poisson likelihood with mean $N_s \sum_k p_{s,k}\mu_{j,k}$, in which
 both $\bm{\mu}_j$ and $\bm{p}_s$ are unconstrained at the optimum
 (no prior, no penalty, no spatial-smoothness regularization that
-ties the two together). At any interior MLE, for each spot $s$ and
-each gene $j$,
-\begin{equation}
-  \sum_k \hat{P}_{sk} \hat{\mu}_{j,k} = \bar{X}_{sj},
-  \label{eq:cell-total-st}
-\end{equation}
-where $\bar{X}_{sj} = X_{sj}/N_s$ is the empirical mean. The
-identity holds exactly (up to optimization tolerance); boundary
-cases ($\hat P_{sk} = 0$ for some $k$, or $\hat\mu_{j,k} = 0$ for
-some $(j,k)$) reduce to identities on the active support.
+ties the two together). Write the residual matrix
+$R_{sj} = \bar{X}_{sj} - \sum_k \hat P_{sk}\hat\mu_{j,k}$, where
+$\bar{X}_{sj} = X_{sj}/N_s$, and let $\hat U = [\hat\mu_{j,k}] \in
+\R^{J \times K}$. At any interior MLE:
+\begin{enumerate}
+\item[\emph{(a)}] \textbf{Aggregate identity (unconditional).} The
+  fitted spot totals match the observed spot totals along the column
+  spaces of $\hat P$ and $\hat U$: $\hat P^\top R = 0$ and
+  $R\hat U = 0$. In particular, for every spot $s$ the
+  composition-weighted gene aggregate is reproduced,
+  $\sum_j \hat\mu_{j,k}\,R_{sj} = 0$ for each $k$, and dually
+  $\sum_s \hat P_{sk}\,R_{sj} = 0$.
+\item[\emph{(b)}] \textbf{Per-entry identity (saturated case).} If in
+  addition $\operatorname{rank}(\bar X) \le K$ (the saturated regime,
+  in which the observed mean matrix is itself explained by $K$ cell
+  types), then $R = 0$ and
+  \begin{equation}
+    \sum_k \hat{P}_{sk} \hat{\mu}_{j,k} = \bar{X}_{sj}
+    \quad\text{for every } (s,j).
+    \label{eq:cell-total-st}
+  \end{equation}
+\end{enumerate}
 \end{theorem}
 
 \begin{proof}[Sketch]
-Parallels the ZINB cell-total identity in the scRNA-seq precursor
-paper. Under the unconstrained MLE assumption, the score equation
-with respect to $\hat\mu_{j,k}$ at an interior optimum reads
-$\sum_s \hat P_{sk} (\bar X_{sj} - \sum_{k'} \hat P_{sk'}
-\hat\mu_{j,k'}) = 0$ for each $(j,k)$, and the score equation with
-respect to $\hat P_{sk}$ reads $\sum_j \hat\mu_{j,k} (\bar X_{sj} -
-\sum_{k'} \hat P_{sk'} \hat\mu_{j,k'}) = 0$ for each $(s,k)$. Writing
-the residual matrix $R_{sj} = \bar X_{sj} - \sum_{k'} \hat P_{sk'}
-\hat\mu_{j,k'}$ and the full-transcriptome estimator matrix
-$\hat U = [\hat\mu_{j,k}] \in \R^{J \times K}$ (distinct from the
-marker-restricted $M \in \R^{|\mathcal{M}| \times K}$ of
-\cref{sec:methodology}), both score equations imply $\hat P^\top R
-= 0$ and $R \hat U = 0$ on the active support. When both $\hat P$
-and $\hat U$ have full column rank on their respective active
-supports (the conditions of \cref{thm:rank} applied to the joint
-estimator), the only common-kernel solution is $R = 0$ on the
-active support, giving \eqref{eq:cell-total-st} exactly at any
-interior MLE.
+The score equation for $\hat\mu_{j,k}$ at an interior optimum reads
+$\sum_s \hat P_{sk} R_{sj} = 0$ for each $(j,k)$, i.e. $\hat P^\top R
+= 0$; the score equation for $\hat P_{sk}$ reads $\sum_j
+\hat\mu_{j,k} R_{sj} = 0$ for each $(s,k)$, i.e. $R\hat U = 0$. This
+is part~(a), and it holds unconditionally at any interior MLE.
+
+For part~(b), the two conditions say $R$ lies in the kernel of the
+linear operator $\Lambda: R \mapsto (\hat P^\top R,\, R\hat U)$ on
+$\R^{S\times J}$. Contrary to a tempting argument, joint full column
+rank of $\hat P$ and $\hat U$ does \emph{not} make $\Lambda$
+injective: its kernel has dimension $(S-K)(J-K)$, which is positive
+whenever $K < \min(S,J)$ (a $2\times 2$, $K=1$ instance has a
+one-dimensional kernel, and we confirm the formula numerically in
+\cref{sec:validation}). Hence $\hat P^\top R = R\hat U = 0$ does not
+force $R = 0$ in general. The per-entry identity holds exactly when
+the residual is squeezed out by a rank constraint: if
+$\operatorname{rank}(\bar X)\le K$, the fitted $\hat P\hat U^\top$
+can match $\bar X$ entrywise at the optimum, so $R = 0$. Otherwise
+the unexplained component of $\bar X$ orthogonal to both column
+spaces survives, and only the aggregate identity~(a) holds.
 \end{proof}
 
 \textbf{Scope and practical implication.} \Cref{thm:cell-total-st}
@@ -146,4 +160,9 @@ estimates is invisible in marginal-fit checks. For regularized
 methods, the closer the regularization is to identity, the more
 \eqref{eq:cell-total-st} continues to hold approximately. Diagnosing
 per-cell-type bias requires single-cell-resolution data, marker-gene
-calibration, or external biological priors.
+calibration, or external biological priors. Cell-total consistency
+(\cref{thm:cell-total-st}) is a special case of the general
+coarsened-data consistency theorem of \citet{towell2026synthesis}, in
+which the singleton-candidate-set device used here, single-cell-resolution
+probes (MERFISH/seqFISH+), appears as one instance of a
+domain-independent rank condition and singleton-restoration mechanism.

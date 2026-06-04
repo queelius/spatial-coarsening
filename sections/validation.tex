@@ -51,35 +51,51 @@ $\alpha$, with best conditioning near $\alpha \approx 0.5$.}
 
 \subsection{Cell-total consistency (\cref{thm:cell-total-st})}
 
-The theorem predicts that the fitted spot-mean $\sum_k \hat{P}_{sk}
-\hat{\mu}_{j,k}$ equals the observed $\bar{X}_{sj}$ in the absence
-of sampling noise. We verify this in two regimes.
+The corrected theorem makes two distinct predictions: the
+\emph{aggregate} identity ($\hat P^\top R = 0$, $R\hat U = 0$) holds
+at any interior MLE unconditionally, while the \emph{per-entry}
+identity ($R = 0$) holds only in the saturated regime
+$\operatorname{rank}(\bar X) \le K$. We verify both, and the
+kernel-dimension fact that separates them, in
+\texttt{scripts/cell\_total\_kernel.R}.
 
-\paragraph{Noiseless limit.} For $S = 500$, $J = 50$, $K = 5$, we
-feed the true mean $P \mu^\top$ directly to the oracle (closed-form
-OLS for $P$ given known $\mu$). The fitted spot-mean reproduces the
-truth at machine precision: maximum absolute residual $7.1 \times
-10^{-15}$, median $2.2 \times 10^{-16}$. \Cref{thm:cell-total-st}
-is validated at the exact-zero level its hypothesis predicts.
-Multiplicative-update NMF on the same input does not reach a
-stationary point on a practical iteration budget: the Frobenius
-residual decays sublinearly from $4.53$ at $100$ iterations to
-$0.015$ at $50{,}000$ iterations, never reaching machine precision.
-This is a property of the algorithm (linear convergence of
-multiplicative updates), not of the theorem.
+\paragraph{Kernel dimension.} The operator $\Lambda: R \mapsto (\hat
+P^\top R,\, R\hat U)$ has kernel dimension exactly $(S-K)(J-K)$
+across every tested shape (e.g. $(S,K,J) = (2,1,2) \to 1$, $(4,2,3)
+\to 2$, $(6,2,5) \to 12$, and $0$ when $K = \min(S,J)$). Joint full
+column rank of $\hat P$ and $\hat U$ therefore does \emph{not} make
+$\Lambda$ injective: the per-entry identity cannot follow from the
+score equations alone whenever $K < \min(S, J)$.
 
-\paragraph{Noisy regime.} At finite $N_s$, the residual is
-Monte-Carlo noise. With the oracle estimator on $25$ replicates per
-$N_s$, the median absolute residual decreases monotonically:
-$0.075$ at $N_s = 100$, $0.024$ at $N_s = 1{,}000$, and $0.0075$ at
-$N_s = 10{,}000$, consistent with the $1/\sqrt{N_s}$ Poisson scaling.
-NMF gives essentially the same median trajectory.
+\paragraph{Saturated vs non-saturated.} Fitting the unregularized
+spot-mean factorization to a controlled truth with $S = 8$, $J =
+10$, $K = 3$: when $\operatorname{rank}(\bar X) = 3 \le K$
+(saturated), both the aggregate residuals ($|\hat P^\top R| \le
+2\times10^{-13}$) and the per-entry residual ($\max|R| < 10^{-12}$)
+vanish. When $\operatorname{rank}(\bar X) = 5 > K$ (non-saturated),
+the aggregate residuals still vanish ($|\hat P^\top R| \le
+2\times10^{-9}$, $|R\hat U| \le 7\times10^{-15}$) but the per-entry
+residual persists at $\max|R| = 0.097$. This is precisely
+parts~(a) and~(b) of \cref{thm:cell-total-st}: the saturated
+oracle test reproduces the truth entrywise because feeding
+$P\mu^\top$ (rank $\le K$ by construction) lands in regime~(b),
+whereas a general observed-mean matrix does not.
 
-\paragraph{Practical implication.} The exact cell-total consistency
-predicted by \cref{thm:cell-total-st} is achievable to machine
-precision when $\mu$ is known (e.g., from an external single-cell
-atlas); the noisy-data residual is dominated by Poisson noise, not
-by structural model error.
+\paragraph{Noisy regime.} At finite $N_s$ with $\mu$ known, the
+oracle per-entry residual is Monte-Carlo noise on top of the
+saturated-case zero: across $25$ replicates the median absolute
+residual decreases as $0.075$ at $N_s = 100$, $0.024$ at $N_s =
+1{,}000$, and $0.0075$ at $N_s = 10{,}000$, consistent with
+$1/\sqrt{N_s}$ Poisson scaling.
+
+\paragraph{Practical implication.} A deconvolution method that
+matches the observed data in aggregate (always achievable at an
+interior MLE) need not match it per cell type. The per-entry
+residual is not noise but a structural signature of
+$\operatorname{rank}(\bar X) > K$, and disagreement between methods
+on per-cell-type estimates is invisible in aggregate-fit checks.
+Diagnosing per-cell-type bias requires single-cell-resolution data,
+marker-gene calibration, or external biological priors.
 
 \subsection{Marker-gene bias (\cref{thm:bias-marker})}
 
@@ -134,7 +150,9 @@ coronal brain dataset.
 \mathrm{Dirichlet}(0.5)$ per spot, $P$ has full column rank $30$ with
 $\sigma_{\min} = 2.12$. Cell-total residual on the top-$200$ most
 expressed genes has median relative error $4.2 \times 10^{-2}$,
-consistent with the $1/\sqrt{N_s}$ Poisson floor.
+consistent with the $1/\sqrt{N_s \lambda}$ Poisson floor on relative
+residuals (per-cell rate $\lambda \sim 1$ for the top-expressed
+genes, giving $1/\sqrt{500} \approx 4.5 \times 10^{-2}$).
 
 \paragraph{Structured composition.} Real spatial tissue is not random
 in composition. We construct $G = 6$ tissue-region templates, each a
@@ -259,11 +277,14 @@ $K = 20$ (\Cref{fig:visium}B). Seed-to-seed variability is small
 relative to the noise-floor and substructure contributions
 decomposed below.
 
-\paragraph{Decomposing the NMF residual.} The expected Poisson
-noise floor on $\bar X_{sj} = X_{sj}/N_s$ has per-entry variance
-$\lambda_{sj}/N_s$, which aggregated over the matrix gives
-Frobenius-relative floor $\bigl(\sum_{s,j} \bar X_{sj}/N_s\bigr)^{1/2}
-/ \|\bar X\|_F = 0.053$ on the present data. The observed NMF $K =
+\paragraph{Decomposing the NMF residual.} Write $X_{sj} \sim
+\mathrm{Poisson}(N_s \lambda_{sj})$ with per-cell rate $\lambda_{sj}$,
+so $\bar X_{sj} = X_{sj}/N_s$ has variance $\mathrm{Var}(\bar X_{sj})
+= N_s \lambda_{sj}/N_s^2 = \lambda_{sj}/N_s$ and the plug-in estimate
+$\lambda_{sj} \approx \bar X_{sj}$ gives per-entry noise variance
+$\bar X_{sj}/N_s$. Aggregating across the matrix yields the
+Frobenius-relative floor $\bigl(\sum_{s,j} \bar X_{sj}/N_s
+\bigr)^{1/2} / \|\bar X\|_F = 0.053$ on the present data. The observed NMF $K =
 20$ residual is $0.077$, so the variance excess above the noise
 floor is $0.077^2 - 0.053^2 = 0.0031$, i.e.\ a Frobenius-relative
 contribution of $\sqrt{0.0031} \approx 0.056$. We do not attempt to

@@ -86,9 +86,10 @@ plausible aggregate predictions even when per-cell-type estimates are
 biased.
 
 A simulation study confirms the rank condition, and application to a
-public Visium dataset finds the per-entry cell-total residual
-consistent with the theorem to the Poisson noise floor at the
-sequencing depth of the dataset. The framework subsumes RCTD,
+public Visium dataset finds the aggregate spot-total identity holds
+while a small per-entry residual persists, exactly as the theorem
+predicts off the saturated regime (where the observed-mean matrix has
+rank exceeding the number of cell types). The framework subsumes RCTD,
 Cell2location, and Tangram as special cases, with an RCTD worked
 derivation provided in the text, and gives a precise vocabulary for
 when each method is appropriate. Tangram's empirical observation

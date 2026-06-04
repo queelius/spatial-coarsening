@@ -106,7 +106,13 @@ The rank condition (\cref{thm:rank}) and cell-total consistency
 (\cref{thm:cell-total-st}) then apply: RCTD inherits
 identifiability when the spot-by-cell-type composition matrix
 $P$ has full column rank $K$, and its fitted spot means match
-observed spot means at any interior MLE.
+observed spot means at any interior MLE. When $\hat\mu$ is taken
+fixed (RCTD's operating mode), the relevant rank condition is on
+$\mu$ rather than on $P$: per-spot identifiability of $\bm p_s$ is
+governed by $\sigma_{\min}(\mu)$, which is the per-spot rank
+condition that \cref{sec:validation} characterizes (the
+$\sigma_{\min}(P)$ condition of \cref{thm:rank} governs joint
+$\mu$ recovery, which RCTD does not perform).
 
 The bias bound (\cref{thm:bias-marker}) bites for RCTD when the
 reference $\hat\mu_{j,k}$ is restricted to a marker-gene panel
