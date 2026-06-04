@@ -1,0 +1,36 @@
+{
+  "title": "Coarsening at random for spatial transcriptomics: identifiability conditions for cell-type deconvolution",
+  "upload_type": "publication",
+  "publication_type": "preprint",
+  "description": "<p>Spatial transcriptomics (ST) measures gene expression at spatial positions in tissue, but each measured 'spot' typically aggregates multiple cells of unknown type composition. Recovering per-cell-type expression from spot-level measurements is the deconvolution problem, attacked by methods such as Cell2location, RCTD, Tangram, and CARD. We show that ST deconvolution is an instance of the masked-data identifiability problem from reliability statistics, with each spot acting as a candidate set over cell types and single-cell-resolution platforms (MERFISH, seqFISH+) acting as singleton candidate sets that restore identifiability.</p><p>We establish: (i) a rank-condition for identifiability of cell-type-specific expression from spot-level data, in terms of the spot-by-cell-type composition matrix; (ii) a closed-form bias bound characterizing the cost of marker-gene-set undercoverage; and (iii) a cell-total consistency theorem analogous to the scRNA-seq result, explaining why naive deconvolution methods produce plausible aggregate predictions even when per-cell-type estimates are biased.</p><p>A simulation study confirms the rank condition, and application to a public Visium dataset finds the per-entry cell-total residual consistent with the theorem to the Poisson noise floor at the sequencing depth of the dataset. The framework subsumes RCTD, Cell2location, and Tangram as special cases, with an RCTD worked derivation provided in the text, and gives a precise vocabulary for when each method is appropriate. Tangram's empirical observation that 'a few hundred marker genes suffice' is recovered as a corollary of the rank condition.</p>",
+  "version": "0.1.0",
+  "license": {
+    "id": "CC-BY-4.0"
+  },
+  "keywords": [
+    "masked-data inference",
+    "coarsening at random",
+    "identifiability",
+    "spatial transcriptomics",
+    "cell-type deconvolution",
+    "MERFISH",
+    "Visium",
+    "RCTD",
+    "Cell2location",
+    "Tangram"
+  ],
+  "creators": [
+    {
+      "name": "Towell, Alexander",
+      "orcid": "0000-0001-6443-9897",
+      "affiliation": "Southern Illinois University Edwardsville"
+    }
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/queelius/spatial-coarsening",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}

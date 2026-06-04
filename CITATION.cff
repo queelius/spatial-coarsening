@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+type: article
+title: "Coarsening at random for spatial transcriptomics: identifiability conditions for cell-type deconvolution"
+authors:
+  - family-names: Towell
+    given-names: Alexander
+    email: lex@metafunctor.com
+    orcid: "https://orcid.org/0000-0001-6443-9897"
+    affiliation: "Southern Illinois University Edwardsville"
+abstract: >-
+  Spatial transcriptomics measures gene expression at spatial positions in
+  tissue, but each measured spot typically aggregates multiple cells of
+  unknown type composition. We show that spatial-transcriptomics
+  deconvolution is an instance of the masked-data identifiability problem
+  from reliability statistics, with each spot acting as a candidate set over
+  cell types and single-cell-resolution platforms (MERFISH, seqFISH+) acting
+  as singleton candidate sets that restore identifiability. We establish a
+  rank-condition for identifiability of cell-type-specific expression, a
+  closed-form bias bound for marker-gene-set undercoverage, and a cell-total
+  consistency theorem. The framework subsumes RCTD, Cell2location, and
+  Tangram as special cases.
+keywords:
+  - masked data
+  - coarsening at random
+  - spatial transcriptomics
+  - cell-type deconvolution
+  - MERFISH
+  - Visium
+  - RCTD
+  - identifiability
+license: CC-BY-4.0
+repository-code: "https://github.com/queelius/spatial-coarsening"
