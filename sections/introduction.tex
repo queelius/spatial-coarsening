@@ -20,13 +20,20 @@ and the reference-free STdeconvolve \citep{miller2022reference},
 among the published methods benchmarked by \citet{li2023comprehensive}.
 
 These methods solve the deconvolution problem with a variety of
-parametric and non-parametric approaches. Several discuss
-identifiability informally (RCTD via its likelihood structure;
-Cell2location via its prior; CARD via spatial-smoothness
-restoration), but no prior work characterizes deconvolution
-identifiability through the lens of masked-data coarsening
-conditions, and the consequences for method choice across the
-literature have not been mapped. Practical questions go unanswered:
+parametric and non-parametric approaches. Identifiability of
+cell-type deconvolution has been studied directly: \citet{cai2024inference}
+give asymptotic inference for cell-type proportions from bulk
+expression under a full-rank signature assumption, and the
+nonnegative-matrix-factorization literature characterizes when a
+nonnegative factorization is unique \citep{donoho2003nmf,fu2019nmf}.
+Our contribution is not a new identifiability criterion for
+deconvolution but a re-derivation of the existing full-column-rank
+condition as the coarsening-rank condition of a single masked-data
+framework, which lets us read off when each method's assumptions hold.
+We caution that ``masked'' here denotes a latent cause hidden inside an
+observed candidate set (the Heitjan--Rubin coarsening sense), not the
+feature-masking or token-masking objectives of self-supervised machine
+learning; the two senses are unrelated. Practical questions remain:
 how many marker genes are needed, and when can deconvolution fail
 silently?
 
@@ -62,12 +69,15 @@ We contribute:
   (RCTD, Cell2location, Tangram, CARD) as special cases of the
   framework.
 
-\item \textbf{An identifiability theorem} (\cref{sec:identifiability}):
-  cell-type-specific expression is identifiable from spot-level data
-  if and only if the spot-by-cell-type composition matrix has full
-  column rank. We discuss when this condition is met empirically, and
-  when single-cell-resolution platforms or marker-gene panels are
-  needed to restore it.
+\item \textbf{An identifiability statement organized by the
+  framework} (\cref{sec:identifiability}): we recover the known
+  full-column-rank condition \citep{cai2024inference,fu2019nmf} as the
+  coarsening-rank condition, so that cell-type-specific expression is
+  identifiable from spot-level data if and only if the
+  spot-by-cell-type composition matrix has full column rank. We
+  discuss when this condition is met empirically, and when
+  single-cell-resolution platforms or marker-gene panels are needed to
+  restore it.
 
 \item \textbf{A cell-total consistency theorem}
   (\cref{sec:identifiability}): naive deconvolution methods exactly

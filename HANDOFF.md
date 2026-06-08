@@ -3,7 +3,7 @@
 **Last touched**: 2026-05-13. Initial scaffold v0.1 at `main.pdf`.
 Conference-format draft, builds clean, em-dash free.
 
-This is the conference-format sequel to `~/github/papers/scrna-coarsening/`.
+This is the conference-format sequel to `~/github/coarsening/papers/scrna-coarsening/`.
 
 ---
 
@@ -99,7 +99,7 @@ catalog so they show up in future searches:
   user-action: requires Zenodo authentication and metadata choice.
 - [ ] **Actual simulation run** (currently `validation.tex` describes
   sim results but no code exists). Adapt
-  `paper-mining/scrna-bridge-sim/sim.R` for ST DGP (per-spot
+  `coarsening/sims/scrna-bridge-sim/sim.R` for ST DGP (per-spot
   Dirichlet composition + per-cell-type expression + spot-level
   aggregation). Estimated: 1-2 days.
 - [ ] **Real-data Visium application** on 10x mouse coronal brain.
@@ -127,7 +127,7 @@ catalog so they show up in future searches:
 
 ## 4. Companion repo
 
-`~/github/papers/scrna-coarsening/` is the precursor paper. **The
+`~/github/coarsening/papers/scrna-coarsening/` is the precursor paper. **The
 framework is identical**; this paper is a strict generalization. Many
 theorems cite the scrna-coarsening paper rather than re-deriving:
 - Cell-total consistency proof: cite `[Towell 2026, §3]`
@@ -157,11 +157,11 @@ This is intentional. Keep the citation pattern when expanding.
 
 ```bash
 # Build the paper
-cd ~/github/papers/spatial-coarsening
+cd ~/github/coarsening/papers/spatial-coarsening
 make paper
 
 # To run a simulation (once implemented)
-cd ~/github/paper-mining/scrna-bridge-sim
+cd ~/github/coarsening/sims/scrna-bridge-sim
 Rscript run_st_sim.R       # to be created
 
 # To run real-data application (once implemented)
