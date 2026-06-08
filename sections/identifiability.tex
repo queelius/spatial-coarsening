@@ -82,7 +82,7 @@ STdeconvolve \citep{miller2022reference}), identifiability becomes the
 question of when a nonnegative factorization $\bar X \approx P U^\top$
 is unique, which the nonnegative-matrix-factorization literature
 characterizes through separability and anchor conditions
-\citep{donoho2003nmf,fu2019nmf}; our rank condition is the
+\citep{donoho2003nmf,arora2012topic,fu2019nmf}; our rank condition is the
 reference-supplied special case in which the separability question
 collapses to column rank of a known $P$. Read as a mixture-demixing
 problem, recovering $\bm{\mu}_j$ from the convex combinations $P\bm{\mu}_j$
@@ -90,6 +90,25 @@ is the cell-type instance of demixing mutually contaminated
 distributions \citep{blanchard2014decontamination}; we phrase the
 solvability condition in the coarsening vocabulary (candidate-set rank)
 rather than the contamination-model vocabulary used there.
+
+The same algebra predates spatial deconvolution in the bulk RNA-seq
+setting, where a single mixed-tissue measurement is the signature-matrix
+product of cell-type proportions and cell-type-specific profiles.
+Reference-based bulk deconvolution methods such as MuSiC
+\citep{wang2019music}, CIBERSORTx \citep{newman2019digital}, and the
+Bayesian BayesPrism \citep{chu2022bayesprism} fit exactly this
+signature-times-proportions model, so the full-column-rank requirement of
+\cref{thm:rank} and the cell-total identity of \cref{thm:cell-total-st}
+apply to them verbatim, with each bulk sample playing the role of a spot
+and a cohort of samples playing the role of the spot ensemble. The same
+rank deficiency that obstructs recovery there (a signature matrix without
+full column rank, or a sample ensemble whose composition matrix is rank
+deficient) is the obstruction here. What is genuinely spatial, and absent
+in the bulk case, is that the spots come pre-supplied with distinct
+compositions $\bm{p}_s$ from tissue architecture and that identifiability
+can be restored by single-cell-resolution platforms contributing
+unit-vector rows; these are the spatial-specific contributions the
+coarsening reading isolates.
 
 \Cref{thm:rank} also clarifies the role of single-cell-resolution
 platforms: a single cell measured at single-cell resolution

@@ -13,11 +13,17 @@ even when per-cell-type estimates disagree, and (iii) a first-order
 bias bound under marker-gene undercoverage that recovers Tangram's
 empirical ``a few hundred markers'' rule as a corollary.
 
-The framework subsumes Cell2location, RCTD, Tangram, and CARD as
-special cases and provides a precise vocabulary for when each
-method's assumptions hold. Practitioners gain a framework-level
-diagnostic for method choice; methodologists gain a unified
-theoretical scaffold for further work.
+The framework subsumes RCTD as a special case, worked in full in the
+text, and connects Cell2location, Tangram, CARD, and the other
+reference-based methods to the same C1--C2--C3 ledger through their
+parametric and procedural choices, providing a precise vocabulary for
+when each method's assumptions hold. The same signature-times-proportions
+algebra underlies bulk RNA-seq deconvolution
+\citep{wang2019music,newman2019digital,chu2022bayesprism}, which a
+spatial spot generalizes to multiple samples with distinct
+compositions. Practitioners gain a framework-level diagnostic for method
+choice; methodologists gain a unified theoretical scaffold for further
+work.
 
 The principal open extensions are joint composition--expression
 inference, spatial-autocorrelation priors, and incorporation of

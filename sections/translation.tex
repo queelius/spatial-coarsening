@@ -65,9 +65,10 @@ but also gives more information per observation.
 \subsection{Worked example: RCTD as a C1--C2--C3 specialization}
 \label{sec:rctd-worked}
 
-To make the ``subsumes as special case'' claim concrete, we derive
-RCTD \citep{cable2021robust} as a parametric specialization of the
-framework. RCTD models the spot-level UMI count $X_{sj}$ for gene
+To make the ``special case'' claim concrete for at least one method,
+we derive RCTD \citep{cable2021robust} in full as a parametric
+specialization of the framework; the remaining methods are connected to
+the same ledger but not derived line-by-line here. RCTD models the spot-level UMI count $X_{sj}$ for gene
 $j$ as Poisson with mean $N_s \sum_k p_{s,k} \mu_{j,k}$ (possibly
 inflated by a multiplicative platform-effect term, which we omit
 here without loss of generality). The likelihood factorizes across

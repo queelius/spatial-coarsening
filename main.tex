@@ -90,12 +90,16 @@ A simulation study confirms the rank condition, and application to a
 public Visium dataset finds the aggregate spot-total identity holds
 while a small per-entry residual persists, exactly as the theorem
 predicts off the saturated regime (where the observed-mean matrix has
-rank exceeding the number of cell types). The framework subsumes RCTD,
-Cell2location, and Tangram as special cases, with an RCTD worked
-derivation provided in the text, and gives a precise vocabulary for
-when each method is appropriate. Tangram's empirical observation
-that ``a few hundred marker genes suffice'' is recovered as a
-corollary of the rank condition.
+rank exceeding the number of cell types). The framework subsumes RCTD
+as a special case, with a worked derivation provided in the text, and
+connects Cell2location, Tangram, and the other reference-based methods
+to the same coarsening ledger through their parametric and procedural
+choices, giving a precise vocabulary for when each method is
+appropriate. The same signature-times-proportions algebra underlies
+bulk RNA-seq deconvolution methods such as MuSiC, CIBERSORTx, and
+BayesPrism, of which a spatial spot is the multi-sample generalization.
+Tangram's empirical observation that ``a few hundred marker genes
+suffice'' is recovered as a corollary of the marker-gene bias bound.
 \end{abstract}
 
 \input{sections/introduction}

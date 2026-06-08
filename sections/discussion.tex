@@ -4,9 +4,10 @@
 \subsection{Relation to existing methods}
 
 The translation table (\cref{tab:translation}) and the RCTD worked
-example (\cref{sec:rctd-worked}) place each major ST deconvolution
-method as a parametric or procedural specialization of the same
-coarsening framework: Cell2location replaces the simplex constraint
+example (\cref{sec:rctd-worked}) connect each major ST deconvolution
+method to the same coarsening framework through its parametric or
+procedural choices, with RCTD derived in full and the others read off
+the same C1--C2--C3 ledger: Cell2location replaces the simplex constraint
 with a hierarchical prior \citep{kleshchevnikov2022cell2location};
 RCTD takes the unregularized Poisson form \citep{cable2021robust};
 Tangram constructs singleton candidate sets via cell-level
@@ -22,6 +23,19 @@ regularization implicitly assumes a particular candidate-set
 structure; the framework-level diagnostic (rank condition +
 marker-gene bias bound) lets practitioners predict which method is
 appropriate before running the full pipeline.
+
+The same signature-times-proportions algebra predates the spatial
+setting in bulk RNA-seq deconvolution, where reference-based methods such
+as MuSiC \citep{wang2019music}, CIBERSORTx \citep{newman2019digital}, and
+the Bayesian BayesPrism \citep{chu2022bayesprism} estimate cell-type
+proportions and profiles from mixed-tissue measurements. Each bulk
+sample is an instance of \cref{eq:trans-spot} with a single mixture, and
+a cohort of samples plays the role the spot ensemble plays here, so the
+rank condition and cell-total identity carry over unchanged; what the
+spatial setting adds is that the spots arrive pre-supplied with distinct
+compositions from tissue architecture and that identifiability can be
+restored through single-cell-resolution platforms, neither of which is
+available to bulk deconvolution.
 
 \subsection{What the framework does \emph{not} address}
 

@@ -34,8 +34,10 @@ port directly, giving:
 3. A first-order bias bound under marker-gene undercoverage that recovers
    Tangram's empirical "a few hundred markers" rule as a corollary.
 
-The framework subsumes Cell2location, RCTD, Tangram, CARD, SPOTlight,
-Stereoscope, DestVI, SpatialDecon, and STdeconvolve as special cases.
+The framework subsumes RCTD as a special case (worked in full in the
+text) and connects Cell2location, Tangram, CARD, SPOTlight, Stereoscope,
+DestVI, SpatialDecon, and STdeconvolve to the same C1/C2/C3 ledger via
+their parametric and procedural choices.
 
 ## Build
 
