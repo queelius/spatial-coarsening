@@ -6,6 +6,10 @@ conditions for cell-type deconvolution.**
 Author: Alexander Towell (lex@metafunctor.com), Department of Computer
 Science, Southern Illinois University Edwardsville.
 
+## Status
+
+**Reviewed 2026-06-08 (papermill multi-agent): minor-revision.** No critical issues; all numbers reproduce. Top remaining item: add a paragraph and a few citations situating the rank condition against the bulk RNA-seq deconvolution literature (CIBERSORTx, MuSiC, BayesPrism), and either soften or fully demonstrate the "subsumes Cell2location, RCTD, Tangram, CARD, ..." claim below (currently shown in full only for RCTD).
+
 ## Thesis
 
 Spatial-transcriptomics (ST) deconvolution is mathematically isomorphic to

@@ -187,6 +187,42 @@ Promoted Theorem 1's proof sketch to a full self-contained proof and added a `\b
 
 Theorem 3 (cell-total) and Theorem 4 (bias bound) still cite the scrna-coarsening companion for their full derivations; this is intentional and consistent with the framework-series convention.
 
+### 2026-06-04 multi-agent review (orchestrator interrupted, synthesis written 2026-06-05)
+
+Saved to `.papermill/reviews/2026-06-04/`. Verdict: minor-revision. No Critical.
+Proofs verified sound (rank, cell-total, bias bound); empirical claims correctly
+scoped; real-data Visium pass confirmed as diagnostics-only (not per-cell-type
+recovery). Major items all novelty-positioning: NV-1 (situate rank condition /
+cell-total against NMF-identifiability / linear-mixing literature), NV-2 (bulk
+RNA-seq deconvolution absent), NV-3 ("subsumes four methods" shown only for RCTD),
+NV-4 (thin differentiation from scRNA-seq precursor). Single most-important item:
+the NV-1 positioning paragraph.
+
+### 2026-06-08 multi-agent review (full pass, area-chair direct lenses)
+
+Saved to `.papermill/reviews/2026-06-08/` (review.md + 6 per-specialist files +
+literature-context.md). Verdict: minor-revision. No Critical. Build clean (0
+undefined, 0 over/underfull, no em-dash, 19 pages). Ran `cell_total_kernel.R` and
+`rctd_compare.R`: every quoted number reproduced exactly (kernel dim (S-K)(J-K);
+saturated/non-saturated residuals; RCTD head-to-head 0.026/0.046, 0.011/0.044).
+All three theorems re-verified sound.
+
+Confirmed RESOLVED since 2026-06-04: NV-1 (identifiability.tex lines 71-92 now
+situate the rank condition and cell-total result against cai2024inference,
+donoho2003nmf, fu2019nmf, blanchard2014decontamination) and NV-4 (intro lines
+56-60 state the binary-vs-spot-composition candidate-set boundary).
+
+Carried-forward Major: NV-2/CV-2 (bulk deconvolution still absent), NV-3/M-1
+("four methods" still RCTD-only; add a Cell2location derivation + real head-to-
+head), F-1 (12-page-target vs 19-page-artifact vs Genome-Biology-primary
+mismatch). Minor: Stahl-2016 miscited for the 10x Visium dataset; seqFISH+
+primary (Eng 2019) uncited (6 mentions); tsiatis2006semiparametric orphan;
+abstract attributes Tangram rule to rank condition rather than the bias bound;
+inconsistent [Sketch] labels (cell-total proof is complete). Single most-important
+item: situate the framework against the bulk RNA-seq deconvolution literature
+(CIBERSORTx/MuSiC/BayesPrism), the one remaining visible genomics gap now that the
+NMF/linear-mixing positioning is in place.
+
 ## Conventions
 
 - **No em-dashes** (soul plugin hook enforces).
